@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { api, Comic, Issue } from "./api";
 import Header from "./components/Header";
 import ControlsBar from "./components/ControlsBar";
 import ComicCard from "./components/ComicCard";
 import IssueCard from "./components/IssueCard";
 import Modal from "./components/Modal";
+import SolicitationFooter from "./components/SolicitationFooter";
+import BottomFooter from "./components/BottomFooter";
 import "./styles/style.css";
 
 const App: React.FC = () => {
@@ -25,6 +27,30 @@ const App: React.FC = () => {
         year: [],
         language: [],
     });
+
+    const [isControlsHidden, setIsControlsHidden] = useState(false);
+    const lastScrollTop = useRef(0);
+    const scrollableContentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const scrollElement = scrollableContentRef.current;
+        if (!scrollElement) return;
+
+        const handleScroll = () => {
+            const scrollTop = scrollElement.scrollTop;
+            if (scrollTop > lastScrollTop.current && scrollTop > 50) {
+                // Scrolling down
+                setIsControlsHidden(true);
+            } else if (scrollTop < lastScrollTop.current) {
+                // Scrolling up
+                setIsControlsHidden(false);
+            }
+            lastScrollTop.current = scrollTop;
+        };
+
+        scrollElement.addEventListener("scroll", handleScroll);
+        return () => scrollElement.removeEventListener("scroll", handleScroll);
+    }, []);
 
     useEffect(() => {
         loadComics();
@@ -96,57 +122,61 @@ const App: React.FC = () => {
 
     return (
         <div className="main-wrapper">
-            <Header
-                view={view}
-                currentComic={currentComic}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                onLogoClick={handleBackToHome}
-            />
+            <div className="landing-section">
+                <Header
+                    view={view}
+                    currentComic={currentComic}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    onLogoClick={handleBackToHome}
+                />
 
-            <ControlsBar
-                view={view}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                onBackClick={handleBackToHome}
-                activeFilters={activeFilters}
-                setActiveFilters={setActiveFilters}
-                items={view === "home" ? allComics : currentIssues}
-            />
-
-            <main className="container" id="main-container">
-                <div className="scrollable-content">
-                    <div className={`cards has-content ${viewMode === "list" ? "list-view" : ""}`}>
-                        {isLoading ? (
-                            <div className="loading">
-                                <div className="loading-spinner"></div>
-                                <p>Carregando...</p>
-                            </div>
-                        ) : filteredItems.length > 0 ? (
-                            filteredItems.map((item) =>
-                                view === "home" ? (
-                                    <ComicCard
-                                        key={item.id}
-                                        comic={item as Comic}
-                                        onClick={() => loadIssues(item.id)}
-                                    />
-                                ) : (
-                                    <IssueCard
-                                        key={item.id}
-                                        issue={item as Issue}
-                                        onClick={() => setSelectedIssueId(item.id)}
-                                    />
-                                )
-                            )
-                        ) : (
-                            <div className="empty-state">
-                                <h3>📚 Nenhum item encontrado</h3>
-                                <p>Tente ajustar sua busca ou filtros.</p>
-                            </div>
-                        )}
-                    </div>
+                <div className={`controls-container ${isControlsHidden ? "controls-hidden" : ""}`}>
+                    <ControlsBar
+                        view={view}
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
+                        onBackClick={handleBackToHome}
+                        activeFilters={activeFilters}
+                        setActiveFilters={setActiveFilters}
+                        items={view === "home" ? allComics : currentIssues}
+                    />
                 </div>
-            </main>
+
+                <main className={`container ${isControlsHidden ? "controls-hidden" : ""}`} id="main-container">
+                    <div className="scrollable-content" ref={scrollableContentRef}>
+                        <div className={`cards has-content ${viewMode === "list" ? "list-view" : ""}`}>
+                            {isLoading ? (
+                                <div className="loading">
+                                    <div className="loading-spinner"></div>
+                                    <p>Carregando...</p>
+                                </div>
+                            ) : filteredItems.length > 0 ? (
+                                filteredItems.map((item) =>
+                                    view === "home" ? (
+                                        <ComicCard
+                                            key={item.id}
+                                            comic={item as Comic}
+                                            onClick={() => loadIssues(item.id)}
+                                        />
+                                    ) : (
+                                        <IssueCard
+                                            key={item.id}
+                                            issue={item as Issue}
+                                            onClick={() => setSelectedIssueId(item.id)}
+                                        />
+                                    )
+                                )
+                            ) : (
+                                <div className="empty-state">
+                                    <h3>📚 Nenhum item encontrado</h3>
+                                    <p>Tente ajustar sua busca ou filtros.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </main>
+            </div>
 
             {selectedIssueId && (
                 <Modal
@@ -154,6 +184,9 @@ const App: React.FC = () => {
                     onClose={() => setSelectedIssueId(null)}
                 />
             )}
+
+            <SolicitationFooter />
+            <BottomFooter />
         </div>
     );
 };

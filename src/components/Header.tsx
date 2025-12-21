@@ -54,10 +54,10 @@ const Header: React.FC<HeaderProps> = ({
                 </button>
 
                 <div
-                    className={`search-input-container ${isSearchOpen ? "visible" : ""}`}
-                    style={{ display: isSearchOpen ? "flex" : "none" }}
+                    className={`search-input-container ${isSearchOpen ? "active" : ""}`}
                 >
                     <input
+                        id="search"
                         type="text"
                         value={searchTerm}
                         onChange={(e) => onSearchChange((e.target as HTMLInputElement).value)}
