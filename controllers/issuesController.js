@@ -1,75 +1,42 @@
-const { supabase } = require('../config/database');
+const { supabase } = require("../config/database");
 
 class IssuesController {
-  
   async getIssueById(req, res) {
     try {
       const { id } = req.params;
-      
+
       const { data, error } = await supabase
-        .from('Issue')
-        .select('*')
-        .eq('id', id)
+        .from("Issue")
+        .select("*, Idiom(name), Comic(*, Publisher(name))")
+        .eq("id", id)
         .single();
-      
+
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           return res.status(404).json({
             success: false,
-            message: 'Issue not found'
+            message: "Issue not found",
           });
         }
         throw error;
       }
 
-      let idiomName = null;
-      let comicTitle = null;
-      let comicYear = null;
-      let publisherName = null;
-      let authors = [];
+      const { data: authorsData } = await supabase
+        .from("ComicAuthor")
+        .select("Author(*)")
+        .eq("comicId", data.comicId);
 
-      if (data.idiomId) {
-        const { data: idiom } = await supabase.from('Idiom').select('name').eq('id', data.idiomId).single();
-        idiomName = idiom?.name;
-      }
+      const authors = authorsData?.map((ca) => ca.Author) || [];
 
-      if (data.comicId) {
-        const { data: comicData } = await supabase.from('Comic').select('*').eq('id', data.comicId).single();
-        
-        if (comicData) {
-          comicTitle = comicData.title;
-          comicYear = comicData.year;
-          
-          if (comicData.publisherId) {
-            const { data: publisher } = await supabase.from('Publisher').select('name').eq('id', comicData.publisherId).single();
-            publisherName = publisher?.name;
-          }
-
-          const { data: comicAuthors } = await supabase
-            .from('ComicAuthor')
-            .select('authorId')
-            .eq('comicId', data.comicId);
-          
-          if (comicAuthors && comicAuthors.length > 0) {
-            const authorIds = comicAuthors.map(ca => ca.authorId);
-            const { data: authorsData } = await supabase
-              .from('Author')
-              .select('*')
-              .in('id', authorIds);
-            authors = authorsData || [];
-          }
-        }
-      }
-      
       let genres = data.genres;
-      if (typeof genres === 'string') {
+      if (typeof genres === "string") {
         try {
           genres = JSON.parse(genres);
         } catch (e) {
-          genres = genres.split(',').map(g => g.trim());
+          genres = genres.split(",").map((g) => g.trim());
         }
       }
-      
+
       const issue = {
         id: data.id,
         title: data.title,
@@ -82,26 +49,28 @@ class IssuesController {
         cover: data.cover,
         synopsis: data.synopsis,
         comicId: data.comicId,
-        language: idiomName,
-        comic_title: comicTitle,
-        comic_year: comicYear,
-        publisher: publisherName,
+        language: data.Idiom?.name || null,
+        comic_title: data.Comic?.title || null,
+        comic_year: data.Comic?.year || null,
+        publisher: data.Comic?.Publisher?.name || null,
         authors: authors,
         credito: data.credito,
-        creditoLink: data.creditoLink
+        creditoLink: data.creditoLink,
       };
-      
+
       res.json({
         success: true,
-        data: issue
+        data: issue,
       });
-      
     } catch (error) {
-      console.error('Error fetching issue by ID:', error);
+      console.error("Error fetching issue by ID:", error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching issue details',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: "Error fetching issue details",
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : "Internal server error",
       });
     }
   }
@@ -109,52 +78,34 @@ class IssuesController {
   async getAllIssues(req, res) {
     try {
       const { limit = 50, offset = 0, search } = req.query;
-      
+
       let query = supabase
-        .from('Issue')
-        .select('*', { count: 'exact' });
-      
+        .from("Issue")
+        .select("*, Idiom(name), Comic(title)", { count: "exact" });
+
       if (search) {
-        query = query.ilike('title', `%${search}%`);
+        query = query.ilike("title", `%${search}%`);
       }
-      
+
       const { data, error, count } = await query
-        .order('issueNumber', { ascending: true })
+        .order("issueNumber", { ascending: true })
         .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
-      
-      if (error) {
-        throw error;
-      }
 
-      const comicIds = [...new Set(data.map(i => i.comicId).filter(Boolean))];
-      const idiomIds = [...new Set(data.map(i => i.idiomId).filter(Boolean))];
-      
-      let comicsMap = new Map();
-      let idiomsMap = new Map();
+      if (error) throw error;
 
-      if (comicIds.length > 0) {
-        const { data: comics } = await supabase.from('Comic').select('id, title').in('id', comicIds);
-        comicsMap = new Map(comics.map(c => [c.id, c.title]));
-      }
-
-      if (idiomIds.length > 0) {
-        const { data: idioms } = await supabase.from('Idiom').select('id, name').in('id', idiomIds);
-        idiomsMap = new Map(idioms.map(i => [i.id, i.name]));
-      }
-      
-      const issues = data.map(issue => ({
+      const issues = data.map((issue) => ({
         id: issue.id,
         title: issue.title,
         issueNumber: issue.issueNumber,
         year: issue.year,
         cover: issue.cover,
         comicId: issue.comicId,
-        comic_title: comicsMap.get(issue.comicId) || null,
-        language: idiomsMap.get(issue.idiomId) || null,
+        comic_title: issue.Comic?.title || null,
+        language: issue.Idiom?.name || null,
         credito: issue.credito || null,
-        creditoLink: issue.creditoLink || null
+        creditoLink: issue.creditoLink || null,
       }));
-      
+
       res.json({
         success: true,
         count: issues.length,
@@ -162,17 +113,19 @@ class IssuesController {
         pagination: {
           limit: parseInt(limit),
           offset: parseInt(offset),
-          has_more: parseInt(offset) + issues.length < count
+          has_more: parseInt(offset) + issues.length < count,
         },
-        data: issues
+        data: issues,
       });
-      
     } catch (error) {
-      console.error('Error fetching all issues:', error);
+      console.error("Error fetching all issues:", error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching issues',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: "Error fetching issues",
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : "Internal server error",
       });
     }
   }
