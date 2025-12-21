@@ -1,41 +1,40 @@
-# pInk Comics
+# pInk
 
-O website pInk é um catálogo web de quadrinhos desenvolvido em JavaScript utilizando Supabase PostgreSQL como banco de dados.
+## ✨ Funcionalidades
+
+- **Catálogo**: Interface limpa e intuitiva para buscar seu quadrinho favorito.
+- **Filtros**: Filtrar por editora, idioma e ano com resultados instantâneos.
+- **Modal**: Visualização detalhada de cada revista, incluindo sinopses, metadados e links de download direto.
+- **Performance**: Desenvolvido com Bun e ElysiaJS para alta performance.
 
 ## 🛠️ Tecnologias
 
-- **Frontend:** JavaScript
-- **Backend:** Express.js
-- **Database:** Supabase PostgreSQL
+- **Frontend**: React + Vite
+- **Backend**: Bun + ElysiaJS
+- **Database**: Supabase (PostgreSQL)
+- **Typing**: TypeScript
 
-## ⚙ Funcionalidades
+## 🚀 Setup
 
-- **Catálogo:** A página inicial conta com o catálogo onde você poderá visualizar todos os quadrinhos cadastrados, ao selecionar um quadrinho específico você é direcionado à página das edições.
-- **Pesquisa:** A pesquisa está presente tanto na página inicial quanto na página das edições.
-- **Layout:** Você pode alterar a disposição dos cards entre grade e lista em ambas as páginas.
-- **Filtro:** Com o filtro você pode selecionar entre as categorias editora, ano de lançamento e idioma para encontrar o seu quadrinho desejado. Esta funcionalidade ainda está sendo trabalhada, então pode haver alguns bugs.
+1.  **Instalar dependências**:
 
-## 📁 Estrutura do Projeto
+    ```bash
+    bun install
+    ```
 
-```
-pInk/
-├── src/
-├── public/
-├── api/
-├── routes/
-├── controllers/
-├── config/
-├── docs/
-├── assets/
-└── index.html
-```
+2.  **Configurar ambiente**:
+    Crie um arquivo `.env` baseado em `.env.example` com suas credenciais do Supabase.
 
-## 🚀 Como Rodar
+3.  **Iniciar o ambiente de desenvolvimento**:
 
-```bash
-npm install
-npm run dev    # Desenvolvimento (Vite)
-npm start      # Produção (Express)
-```
+    ```bash
+    # Iniciar o backend (com hot-reload)
+    bun run server
+
+    # Iniciar o frontend
+    bun run dev
+    ```
+
 ---
+
 Desenvolvido por Zweihander
