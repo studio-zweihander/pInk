@@ -8,7 +8,6 @@
   --font: "Poppins", sans-serif;
   --font2: "JetBrains Mono", monospace;
 
-  /* Espaçamentos mobile-first */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
@@ -16,19 +15,16 @@
   --spacing-xl: 2rem;
   --spacing-xxl: 3rem;
 
-  /* Border radius mobile-first */
   --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 15px;
   --border-radius-xl: 20px;
   --border-radius-xxl: 25px;
 
-  /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
 
-  /* Card sizes */
   --card-width-mobile: 380px;
   --card-width-tablet-sm: 380px;
   --card-width-tablet: 380px;
@@ -137,7 +133,6 @@ header {
   margin-left: var(--spacing-sm);
 }
 
-/* Search Container - Mobile First */
 .search-container {
   display: flex;
   align-items: center;
@@ -261,7 +256,6 @@ header {
   min-height: 0;
 }
 
-/* Scrollbar customizada para scrollable-content */
 .scrollable-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -877,7 +871,6 @@ header {
   font-weight: 500;
 }
 
-/* Toggle de visualização camuflado */
 .view-toggle {
   display: flex;
   gap: 2px;
@@ -922,7 +915,6 @@ header {
   transform: scale(1.05);
 }
 
-/* Cards em modo lista (horizontal) */
 .cards.list-view {
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   max-width: 100%;
@@ -1236,8 +1228,6 @@ header {
   color: var(--primary-color);
   transform: translateY(-1px);
 }
-
-/* RESPONSIVE BREAKPOINTS */
 
 @media screen and (max-width: 479px) {
   .scrollable-content {
@@ -1695,7 +1685,7 @@ header {
     height: calc(100vh - 180px + 56px);
   }
 }
-/* Footer Styles - pInk Design System Consistency */
+
 .site-footer {
   background: var(--primary-surface);
   flex-shrink: 0;
