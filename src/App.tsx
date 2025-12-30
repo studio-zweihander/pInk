@@ -5,8 +5,7 @@ import ControlsBar from "./components/ControlsBar";
 import ComicCard from "./components/ComicCard";
 import IssueCard from "./components/IssueCard";
 import Modal from "./components/Modal";
-import SolicitationFooter from "./components/SolicitationFooter";
-import BottomFooter from "./components/BottomFooter";
+import Footer from "./components/Footer";
 import "./styles/style.css";
 
 const App: React.FC = () => {
@@ -39,10 +38,8 @@ const App: React.FC = () => {
         const handleScroll = () => {
             const scrollTop = scrollElement.scrollTop;
             if (scrollTop > lastScrollTop.current && scrollTop > 50) {
-                // Scrolling down
                 setIsControlsHidden(true);
             } else if (scrollTop < lastScrollTop.current) {
-                // Scrolling up
                 setIsControlsHidden(false);
             }
             lastScrollTop.current = scrollTop;
@@ -71,6 +68,7 @@ const App: React.FC = () => {
     const loadIssues = async (comicId: number) => {
         setIsLoading(true);
         setView("issues");
+        setActiveFilters({ publisher: [], year: [], language: [] });
         try {
             const [comicRes, issuesRes] = await Promise.all([
                 api.getComicById(comicId),
@@ -91,16 +89,17 @@ const App: React.FC = () => {
             item.title.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
+        if (activeFilters.year.length > 0) {
+            filtered = (filtered as (Comic | Issue)[]).filter((item) =>
+                activeFilters.year.includes(item.year?.toString())
+            );
+        }
+
         if (view === "home") {
             const comics = filtered as Comic[];
             if (activeFilters.publisher.length > 0) {
                 filtered = comics.filter((c) =>
                     activeFilters.publisher.includes(c.publisher)
-                );
-            }
-            if (activeFilters.year.length > 0) {
-                filtered = (filtered as Comic[]).filter((c) =>
-                    activeFilters.year.includes(c.year?.toString())
                 );
             }
             if (activeFilters.language.length > 0) {
@@ -118,6 +117,7 @@ const App: React.FC = () => {
         setCurrentComic(null);
         setCurrentIssues([]);
         setSearchTerm("");
+        setActiveFilters({ publisher: [], year: [], language: [] });
     };
 
     return (
@@ -133,6 +133,7 @@ const App: React.FC = () => {
 
                 <div className={`controls-container ${isControlsHidden ? "controls-hidden" : ""}`}>
                     <ControlsBar
+                        key={view}
                         view={view}
                         viewMode={viewMode}
                         onViewModeChange={setViewMode}
@@ -185,8 +186,7 @@ const App: React.FC = () => {
                 />
             )}
 
-            <SolicitationFooter />
-            <BottomFooter />
+            <Footer />
         </div>
     );
 };

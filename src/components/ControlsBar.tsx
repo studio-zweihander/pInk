@@ -81,7 +81,7 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
             <div className="controls-right">
                 <div className="filter-container">
                     <button
-                        className={`toggle-button ${totalActive > 0 ? "has-filters" : ""}`}
+                        className={`toggle-button filter-toggle ${isFilterOpen ? "active" : ""} ${totalActive > 0 ? "has-filters" : ""}`}
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                         data-count={totalActive > 0 ? totalActive : undefined}
                     >
@@ -98,21 +98,23 @@ const ControlsBar: React.FC<ControlsBarProps> = ({
 
                     {isFilterOpen && (
                         <div className="filter-dropdown open">
-                            <div className="filter-section">
-                                <h4 className="filter-title">Editora</h4>
-                                <div className="filter-options">
-                                    {filters.publishers.map((p) => (
-                                        <label key={p} className="filter-option">
-                                            <input
-                                                type="checkbox"
-                                                checked={activeFilters.publisher.includes(p)}
-                                                onChange={() => toggleFilter("publisher", p)}
-                                            />
-                                            <span className="filter-label">{p}</span>
-                                        </label>
-                                    ))}
+                            {view === "home" && (
+                                <div className="filter-section">
+                                    <h4 className="filter-title">Editora</h4>
+                                    <div className="filter-options">
+                                        {filters.publishers.map((p) => (
+                                            <label key={p} className="filter-option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={activeFilters.publisher.includes(p)}
+                                                    onChange={() => toggleFilter("publisher", p)}
+                                                />
+                                                <span className="filter-label">{p}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="filter-section">
                                 <h4 className="filter-title">Ano</h4>
